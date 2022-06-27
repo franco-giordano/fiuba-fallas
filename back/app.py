@@ -1,8 +1,10 @@
 from experto import CoviDetector, SintomasPaciente, EstadoClinico, ParametrosPaciente, Hisopado
 from flask import Flask, jsonify, request
 import os
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+CORS(app, support_credentials=True)
 
 
 @app.route("/")
@@ -10,7 +12,8 @@ def home():
     return 'intenta POST /analisis'
 
 
-@app.route("/analisis", methods=['POST'])
+@app.route("/analisis", methods=['POST', 'OPTIONS'])
+@cross_origin(supports_credentials=True)
 def analizar():
     """
     {
