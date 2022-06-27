@@ -236,10 +236,6 @@ function DiagnosticPage() {
 					<Button variant="contained" onClick={()=>(setResults(null))}>
 						Realizar otro diagnostico
 					</Button>
-
-					<Button variant="contained">
-						Exportar resultado
-					</Button>
 				</Box>
 			</Box>
 		);
