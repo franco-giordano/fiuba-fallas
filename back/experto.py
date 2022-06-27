@@ -3,13 +3,20 @@ from experta import *
 from enum import Enum
 from typing import List
 
+class BuildableEnum(Enum):
+    @classmethod
+    def from_name(cls, string: str):
+        for p in cls:
+            if p.name == string:
+                return p
+        raise ValueError(string)
 
-class EstadoClinico(Enum):
+class EstadoClinico(BuildableEnum):
     ESTABLE = 0
     DE_GRAVEDAD = 1
 
-
-class SintomasPaciente(Enum):
+# obsoleto
+class SintomasPaciente(BuildableEnum):
     TOS = 0
     FIEBRE = 1
     MOCOS = 2
@@ -20,16 +27,16 @@ class SintomasPaciente(Enum):
     VOMITOS = 7
 
 
-class Hisopado(Enum):
+class Hisopado(BuildableEnum):
     NO_DISPONIBLE = 0
     POSITIVO = 1
     NEGATIVO = 2
 
 
-class TratamientosSugeridos(Enum):
+class TratamientosSugeridos(BuildableEnum):
     HISOPAR = "Hisopar al paciente"
     INDICAR_AISLAMIENTO = "Indicar aislamiento"
-    TRATAR_CON_ANTITERMICO = "Tratar con antitermico"  # (???) muy random
+    TRATAR_CON_MEDICAMENTOS = "Tratar con medicamentos"
     LLAMAR_PERIODICAMENTE = "Llamar periodicamente, cada 10 dias"
     LIBERAR_AISLAMIENTO = "Liberar del aislamiento"
     INTERNAR = "Internar"
@@ -38,14 +45,14 @@ class TratamientosSugeridos(Enum):
 
 
 class ParametrosPaciente(Fact):
-    sintomas = Field([SintomasPaciente], default=[])
+    sintomas = Field(int, default=0)
     estado_clinico = Field(
         EstadoClinico, default=EstadoClinico.ESTABLE, mandatory=True)
     resultado_hisopado = Field(Hisopado, default=Hisopado.NO_DISPONIBLE)
 
 
-def tiene_demasiados_sintomas(lista_sintomas: List[SintomasPaciente]) -> bool:
-    return len(lista_sintomas) >= 2
+def tiene_demasiados_sintomas(cant_sintomas: int) -> bool:
+    return cant_sintomas >= 2
 
 
 class CoviDetector(KnowledgeEngine):
@@ -79,7 +86,7 @@ class CoviDetector(KnowledgeEngine):
                            resultado_hisopado=Hisopado.POSITIVO)
     )
     def enfermo_estable_positivo(self):
-        self.sugerencias_paciente += [TratamientosSugeridos.TRATAR_CON_ANTITERMICO,
+        self.sugerencias_paciente += [TratamientosSugeridos.TRATAR_CON_MEDICAMENTOS,
                                       TratamientosSugeridos.LLAMAR_PERIODICAMENTE]
 
     @Rule(
