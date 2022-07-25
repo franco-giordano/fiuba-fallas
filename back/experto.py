@@ -3,6 +3,7 @@ from experta import *
 from enum import Enum
 from typing import List
 
+
 class BuildableEnum(Enum):
     @classmethod
     def from_name(cls, string: str):
@@ -11,11 +12,14 @@ class BuildableEnum(Enum):
                 return p
         raise ValueError(string)
 
+
 class EstadoClinico(BuildableEnum):
     ESTABLE = 0
     DE_GRAVEDAD = 1
 
 # obsoleto
+
+
 class SintomasPaciente(BuildableEnum):
     TOS = 0
     FIEBRE = 1
@@ -38,10 +42,11 @@ class TratamientosSugeridos(BuildableEnum):
     INDICAR_AISLAMIENTO = "Indicar aislamiento"
     TRATAR_CON_MEDICAMENTOS = "Tratar con medicamentos"
     LLAMAR_PERIODICAMENTE = "Llamar periodicamente, cada 10 dias"
-    LIBERAR_AISLAMIENTO = "Liberar del aislamiento"
+    LIBERAR_AISLAMIENTO = "No debe cumplir aislamiento"
     INTERNAR = "Internar"
     MONITOREAR_EVOLUCION = "Monitorear evolucion"
     REALIZAR_ESTUDIOS = "Realizar estudios"
+    ANALIZAR = "Analizar paciente"
 
 
 class ParametrosPaciente(Fact):
@@ -72,7 +77,8 @@ class CoviDetector(KnowledgeEngine):
     @Rule(
         ParametrosPaciente(sintomas=P(tiene_demasiados_sintomas),
                            estado_clinico=EstadoClinico.ESTABLE,
-                           #    resultado_hisopado=OR(Hisopado.POSITIVO, Hisopado.NO_DISPONIBLE)       # descomentando esto evita el INDICA+LIBERAR aislamiento para un caso
+                           # descomentando esto evita el INDICA+LIBERAR aislamiento para un caso
+                           resultado_hisopado=Hisopado.NO_DISPONIBLE
                            )
     )
     def enfermo_estable(self):
@@ -90,7 +96,17 @@ class CoviDetector(KnowledgeEngine):
                                       TratamientosSugeridos.LLAMAR_PERIODICAMENTE]
 
     @Rule(
-        ParametrosPaciente(estado_clinico=EstadoClinico.ESTABLE,
+        ParametrosPaciente(sintomas=P(lambda x: x == 0),  # sin sintomas
+                           estado_clinico=EstadoClinico.ESTABLE,
+                           resultado_hisopado=Hisopado.NEGATIVO)
+    )
+    def sano(self):
+        self.sugerencias_paciente += []
+        self.sugerencias_contactos_estrechos += []
+
+    @Rule(
+        ParametrosPaciente(sintomas=P(lambda x: x > 0),
+                           estado_clinico=EstadoClinico.ESTABLE,
                            resultado_hisopado=Hisopado.NEGATIVO)
     )
     def enfermo_estable_negativo(self):
@@ -99,14 +115,22 @@ class CoviDetector(KnowledgeEngine):
         self.sugerencias_contactos_estrechos += [
             TratamientosSugeridos.LIBERAR_AISLAMIENTO]
 
+    @Rule(
+        ParametrosPaciente(sintomas=P(lambda x: x > 0))
+    )
+    def enfermo_sano_estable(self):
+        self.sugerencias_paciente += [
+            TratamientosSugeridos.ANALIZAR]
+        self.sugerencias_contactos_estrechos += []
+
     # === ENFERMO DE DE_GRAVEDAD
     @Rule(
         ParametrosPaciente(estado_clinico=EstadoClinico.DE_GRAVEDAD)
     )
     def enfermo_gravedad(self):
         self.sugerencias_paciente += [TratamientosSugeridos.INTERNAR]
-        self.sugerencias_contactos_estrechos += [
-            TratamientosSugeridos.INDICAR_AISLAMIENTO]
+        # self.sugerencias_contactos_estrechos += [
+        #     TratamientosSugeridos.INDICAR_AISLAMIENTO]
 
     @Rule(
         ParametrosPaciente(estado_clinico=EstadoClinico.DE_GRAVEDAD,
@@ -124,3 +148,12 @@ class CoviDetector(KnowledgeEngine):
         self.sugerencias_paciente += [TratamientosSugeridos.REALIZAR_ESTUDIOS]
         self.sugerencias_contactos_estrechos += [
             TratamientosSugeridos.LIBERAR_AISLAMIENTO]
+
+    @Rule(
+        ParametrosPaciente(resultado_hisopado=Hisopado.POSITIVO)
+    )
+    def positivo(self):
+        self.sugerencias_paciente += [
+            TratamientosSugeridos.INDICAR_AISLAMIENTO]
+        self.sugerencias_contactos_estrechos += [
+            TratamientosSugeridos.INDICAR_AISLAMIENTO]

@@ -1,6 +1,5 @@
-from experto import CoviDetector, SintomasPaciente, EstadoClinico, ParametrosPaciente, Hisopado
+from experto import CoviDetector, EstadoClinico, ParametrosPaciente, Hisopado
 from flask import Flask, jsonify, request
-import os
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
@@ -58,4 +57,4 @@ def analizar():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run('0.0.0.0')
