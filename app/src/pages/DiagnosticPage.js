@@ -80,18 +80,33 @@ function DiagnosticPage() {
 			},
 			body: JSON.stringify({
 				hisopado: covidTestResultState,
-				sintomasPaciente: Object.values(state).filter((x)=>x).length,
+				sintomasPaciente: Object.values(state).filter((x) => x).length,
 				estadoClinico: clinicState,
 			})
-  	});
-		setResults(await returnedResults.json());
+		});
+		const res = await returnedResults.json();
+		console.log(res);
+		if (res.sugerencias_contactos_estrechos.includes('No debe cumplir aislamiento') && res.sugerencias_contactos_estrechos.includes('Indicar aislamiento')) {
+			res.sugerencias_contactos_estrechos = res.sugerencias_contactos_estrechos.filter((x) => x !== 'No debe cumplir aislamiento' && x !== 'Indicar aislamiento')
+		}
+		if (res.sugerencias_paciente.includes('No debe cumplir aislamiento') && res.sugerencias_paciente.includes('Indicar aislamiento')) {
+			res.sugerencias_paciente = res.sugerencias_paciente.filter((x) => x !== 'No debe cumplir aislamiento' && x !== 'Indicar aislamiento')
+		}
+		if (res.sugerencias_contactos_estrechos.length === 0) {
+			res.sugerencias_contactos_estrechos = ['No hay tratamiento recomendado.']
+		}
+		if (res.sugerencias_paciente.length === 0) {
+			res.sugerencias_paciente = ['No hay tratamiento recomendado.']
+		}
+		console.log(res);
+		setResults(res);
 	};
 
 	if (!results) {
 		return (
 			<Box sx={{ display: 'flex', justifyContent: 'center' }}>
 				<FormControl sx={{ m: 3 }} component="fieldset" variant="standard">
-					<Paper elevation={3} sx={{mt: 2, p: 2, borderRadius: 4}}>
+					<Paper elevation={3} sx={{ mt: 2, p: 2, borderRadius: 4 }}>
 						<FormLabel component="legend">¿Que sintomas tiene el paciente?</FormLabel>
 						<FormGroup>
 							<FormControlLabel
@@ -145,7 +160,7 @@ function DiagnosticPage() {
 						</FormGroup>
 					</Paper>
 
-					<Paper elevation={3} sx={{mt:2, p: 2, borderRadius: 4}}>
+					<Paper elevation={3} sx={{ mt: 2, p: 2, borderRadius: 4 }}>
 						<FormLabel id="demo-radio-buttons-group-label">¿Cual es el estado clínico del paciente?</FormLabel>
 						<RadioGroup
 							aria-labelledby="demo-radio-buttons-group-label"
@@ -158,7 +173,7 @@ function DiagnosticPage() {
 						</RadioGroup>
 					</Paper>
 
-					<Paper elevation={3} sx={{mt: 2, p: 2, borderRadius: 4}}>
+					<Paper elevation={3} sx={{ mt: 2, p: 2, borderRadius: 4 }}>
 						<FormLabel id="demo-radio-buttons-group-label">¿Cual fue el resultado del hisopado?</FormLabel>
 						<RadioGroup
 							aria-labelledby="demo-radio-buttons-group-label"
@@ -173,7 +188,7 @@ function DiagnosticPage() {
 						</RadioGroup>
 					</Paper>
 
-					<Button sx={{mt: 2}} variant="contained" endIcon={<SendIcon />} onClick={()=>(getResults())}>
+					<Button sx={{ mt: 2 }} variant="contained" endIcon={<SendIcon />} onClick={() => (getResults())}>
 						Enviar
 					</Button>
 				</FormControl>
@@ -183,46 +198,46 @@ function DiagnosticPage() {
 		return (
 			<Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 				<Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-					<Paper elevation={3} sx={{mt: 2, p: 2, borderRadius: 4}}>
+					<Paper elevation={3} sx={{ mt: 2, p: 2, borderRadius: 4 }}>
 						<h2>¿Como continuar?</h2>
 						<Box sx={{ width: '300px' }}>
-								<h3>Paciente</h3>
-								<List>
-									{results.sugerencias_paciente.map((value, index) => (
-										<ListItem key={index}>
-											<Box sx={{
-												backgroundColor: 'black',
-												height: '6px',
-												width: '6px',
-												borderRadius: '5px',
-												mr: 1,
-											}} />
-											<ListItemText
-												primary={value}
-											/>
-										</ListItem>
-									))}
-								</List>
+							<h3>Paciente</h3>
+							<List>
+								{results.sugerencias_paciente.map((value, index) => (
+									<ListItem key={index}>
+										<Box sx={{
+											backgroundColor: 'black',
+											height: '6px',
+											width: '6px',
+											borderRadius: '5px',
+											mr: 1,
+										}} />
+										<ListItemText
+											primary={value}
+										/>
+									</ListItem>
+								))}
+							</List>
 						</Box>
 
 						<Box sx={{ width: '300px' }}>
-									<h3>Contactos Estrechos</h3>
-									<List>
-										{results.sugerencias_contactos_estrechos.map((value, index) => (
-											<ListItem key={index}>
-												<Box sx={{
-													backgroundColor: 'black',
-													height: '6px',
-													width: '6px',
-													borderRadius: '5px',
-													mr: 1,
-												}} />
-												<ListItemText
-													primary={value}
-												/>
-											</ListItem>
-										))}
-									</List>
+							<h3>Contactos Estrechos</h3>
+							<List>
+								{results.sugerencias_contactos_estrechos.map((value, index) => (
+									<ListItem key={index}>
+										<Box sx={{
+											backgroundColor: 'black',
+											height: '6px',
+											width: '6px',
+											borderRadius: '5px',
+											mr: 1,
+										}} />
+										<ListItemText
+											primary={value}
+										/>
+									</ListItem>
+								))}
+							</List>
 						</Box>
 					</Paper>
 				</Box>
@@ -233,7 +248,7 @@ function DiagnosticPage() {
 					rowGap: '15px',
 					mt: 2,
 				}}>
-					<Button variant="contained" onClick={()=>(setResults(null))}>
+					<Button variant="contained" onClick={() => (setResults(null))}>
 						Realizar otro diagnostico
 					</Button>
 				</Box>

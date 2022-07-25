@@ -77,7 +77,6 @@ class CoviDetector(KnowledgeEngine):
     @Rule(
         ParametrosPaciente(sintomas=P(tiene_demasiados_sintomas),
                            estado_clinico=EstadoClinico.ESTABLE,
-                           # descomentando esto evita el INDICA+LIBERAR aislamiento para un caso
                            resultado_hisopado=Hisopado.NO_DISPONIBLE
                            )
     )
@@ -94,15 +93,6 @@ class CoviDetector(KnowledgeEngine):
     def enfermo_estable_positivo(self):
         self.sugerencias_paciente += [TratamientosSugeridos.TRATAR_CON_MEDICAMENTOS,
                                       TratamientosSugeridos.LLAMAR_PERIODICAMENTE]
-
-    @Rule(
-        ParametrosPaciente(sintomas=P(lambda x: x == 0),  # sin sintomas
-                           estado_clinico=EstadoClinico.ESTABLE,
-                           resultado_hisopado=Hisopado.NEGATIVO)
-    )
-    def sano(self):
-        self.sugerencias_paciente += []
-        self.sugerencias_contactos_estrechos += []
 
     @Rule(
         ParametrosPaciente(sintomas=P(lambda x: x > 0),
@@ -129,8 +119,6 @@ class CoviDetector(KnowledgeEngine):
     )
     def enfermo_gravedad(self):
         self.sugerencias_paciente += [TratamientosSugeridos.INTERNAR]
-        # self.sugerencias_contactos_estrechos += [
-        #     TratamientosSugeridos.INDICAR_AISLAMIENTO]
 
     @Rule(
         ParametrosPaciente(estado_clinico=EstadoClinico.DE_GRAVEDAD,
