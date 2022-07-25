@@ -32,3 +32,11 @@ response:
     ]
 }
 ```
+
+## Frontend
+
+```bash
+cd app
+npm install
+npm run start
+```
